@@ -46,7 +46,7 @@
 		{
 			$response = $this->connection->get("friends/ids", array("screen_name" => $sn));
 			$correct = $response->ids;
-			$result = $correct
+			$result = $correct;
 			return $result;
 		}
 
@@ -56,6 +56,32 @@
 			$correct = $response->users;
 			$result = $correct;
 			return $result;
+		}
+		
+		function FindTweetsbyHashtag ($hash)
+		{
+			$tweetss = $this->connection->get("search/tweets", array("q" => "#"$hash, "result_type"=>"recent", "count"=>"50"));
+			foreach($tweetss as $tweet){
+				foreach($tweet as $t){
+					echo '<tr>';
+					echo '<td> <img src="'.$t->user->profile_image_url.'" /> </td>';
+					echo "<td>".$t->text."</td>";
+					echo '</tr>';
+				}
+			}
+		}
+		
+		function FindTweetsbyKeyword ($keyword)
+		{
+		$tweetss = $this->connection->get("search/tweets", array("q" => $keyword, "result_type"=>"recent", "lang"=>"ru", "count"=>"50"));
+			foreach($tweetss as $tweet){
+				foreach($tweet as $t){
+					echo '<tr>';
+					echo '<td> <img src="'.$t->user->profile_image_url.'" /> </td>';
+					echo "<td>".preg_replace("/({$keyword})/iu", '<strong>$1</strong>', $t->text)."</td>";
+					echo '</tr>';
+				}
+			}
 		}
 	}
 ?>
