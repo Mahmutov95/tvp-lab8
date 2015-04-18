@@ -31,7 +31,19 @@ public function __construct($token)
    public function Name(){//
 		return $this->me->getProperty('name');
    }
-   
+    public function event(){
+		$this->event = (new FacebookRequest($this->session, 'GET', '/me/events'))->execute()->getGraphObject();
+		$temp = $this->event->getProperty('data')->backingData;
+		$array;
+		$i=0;
+		while($i<count($temp)){
+			$array[$i]['name'] = $temp[$i]->name;
+			$array[$i]['rsvp_status'] = $temp[$i]->rsvp_status;
+			$array[$i]['id'] = $temp[$i]->id;
+			$i++;
+		}
+		return $array;
+   }
    public function Photo(){//
 		$this->photo = (new FacebookRequest($this->session, 'GET', '/me/picture?type=large&redirect=false'))->execute()->getGraphObject();
 		return $this->photo->getProperty('url'); 
