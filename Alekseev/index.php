@@ -3,6 +3,11 @@
 <head>
 	<meta charset="UTF-8">
 	<title>INDA TVPLAB</title>
+	<style>
+	.friends{color:#45688E; text-align:center; }
+	.Text{color:#45688E;}
+	.clear{clear:both;}
+	</style>
 	<link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
@@ -16,8 +21,6 @@
 		
 		define('UID', 27493985);
 		$uposts = Api::getPosts(UID, 9);
-		
-		
 		$user = Api::getUser(UID);
 		//mpr($user);
 ?>
@@ -32,18 +35,20 @@
 				<img src="<?=$user->photo_200?>" alt="">
 			</figure>
 			<div id="friends">
-				Тут друзья
+				<div class='Text'><b>Мои друзья</b></div>
 				<?
 					$friends = User::getFriends(UID);
+					//var_dump($friends);
 					foreach($friends as $key => $friend)
-					{?>
+					{ $count=count($friend);
+					 for($i=0;$i<=$count;$i++) {?>
 						<div class="friends">
-							<img src="<?=$friend['photo_50']?>" >
+							<img src="<?=$friend[$i]['photo_50']?>" >
 							<div class="fbody">
-								<?=$friend['first_name']?> <?=$friend['last_name']?>	
+								<b><?echo ($friend[$i]['first_name']); ?><br> <? echo ($friend[$i]['last_name']);?></b>	
 							</div>
-						</div>
-					<?}
+						</div> <? if($i%2==0){?> <? };?>
+					<?} };
 				?>
 			</div>
 		</aside>

@@ -103,15 +103,15 @@
 			'user_id' => $id_user,
 			'count' => $count,
 			'offset' => $offset,
-			'fields' => 'domain, photo_50')
+			'fields' => 'first_name, photo_50')
 		);
-		
+		//var_dump($data);
 		$users = array();
 		foreach($data as $key => $user)
 		{
 			$users[] = $user;
 		}
-		return $users;
+		return $data;
 	}
 		
 				
