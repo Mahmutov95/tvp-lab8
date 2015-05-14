@@ -77,9 +77,6 @@
 			}
 		}
 	}
-	else {
-	echo "Нет записей";
-	}
 	
 	if ( isset($_POST['search'])){
 		//TwitterOAuth
@@ -94,9 +91,7 @@
 			}
 		}
 	}
-	else {
-	echo "Нет записей";
-	}
+	
 	?>
 			</table>
 			</div>
