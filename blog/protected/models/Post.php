@@ -18,6 +18,7 @@ class Post extends CActiveRecord
 
 	private $_oldTags;
 
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return static the static model class
@@ -50,6 +51,9 @@ class Post extends CActiveRecord
 			array('tags', 'normalizeTags'),
 
 			array('title, status', 'safe', 'on'=>'search'),
+
+			array('file', 'file', 'allowEmpty'=>true, 'maxSize'=>8388607, 'on'=>array('create'),),
+			array('link', 'length', 'max'=>255),
 		);
 	}
 
@@ -81,6 +85,8 @@ class Post extends CActiveRecord
 			'create_time' => 'Create Time',
 			'update_time' => 'Update Time',
 			'author_id' => 'Author',
+			'file' => 'File',
+			'link' => 'Link',
 		);
 	}
 
