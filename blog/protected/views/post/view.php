@@ -5,6 +5,7 @@ $this->breadcrumbs=array(
 $this->pageTitle=$model->title;
 ?>
 
+
 <?php $this->renderPartial('_view', array(
 	'data'=>$model,
 )); ?>
