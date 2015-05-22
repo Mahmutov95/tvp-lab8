@@ -1,6 +1,10 @@
 <div class="form">
 
-<?php $form=$this->beginWidget('CActiveForm'); ?>
+<?php $form=$this->beginWidget('CActiveForm', array(
+			'id' => 'fp',
+			// 'enableAjaxValidation'=>true,
+			'htmlOptions'=>array('enctype'=>'multipart/form-data'),
+	)); ?>
 
 	<p class="note">Fields with <span class="required">*</span> are required.</p>
 
@@ -36,6 +40,23 @@
 		<?php echo $form->labelEx($model,'status'); ?>
 		<?php echo $form->dropDownList($model,'status',Lookup::items('PostStatus')); ?>
 		<?php echo $form->error($model,'status'); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->labelEx($model, 'file') ?>
+		<?php echo $form->fileField($model, 'file'); ?>
+		<?php echo $form->error($model,'file'); ?>
+	</div>
+
+	<div class="row">
+		<?php echo $form->labelEx($model, 'link') ?>
+		<?php echo $form->textField($model, 'link'); ?>
+		<?php echo $form->error($model,'link'); ?>
+	</div>
+
+	<div class="row">
+		<label for="share">Share to Facebook</label>
+		<input type="checkbox" id="share" name="share" value="facebook">
 	</div>
 
 	<div class="row buttons">

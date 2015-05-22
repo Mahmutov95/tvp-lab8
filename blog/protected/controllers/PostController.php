@@ -1,5 +1,10 @@
 <?php
 
+Yii::import('application.vendors.*');
+require_once('Facebook/SDK/autoload.php');
+use Facebook\FacebookSession;	
+use Facebook\FacebookRequest;
+
 class PostController extends Controller
 {
 	public $layout='column2';
@@ -64,8 +69,87 @@ class PostController extends Controller
 		if(isset($_POST['Post']))
 		{
 			$model->attributes=$_POST['Post'];
+			$model->file = CUploadedFile::getInstance($model, 'file');
+			if(isset($_POST['share']) && $_POST['share'] == 'facebook')
+			{
+				$token = 'CAAP8t3tJ5bUBADYZAg9ap97F7sI2ZAw0wvXjtf99wpODa7AL2J8NJffgZB9TDcfd5qWW9JHzYvgG0ZAatM5C2VBDricp9kank4iG47OGkpgZBcSdhaKAQrcvqdSaorkaIVaIvPuQktb9neaovjCUQHZA1WBiW6IrAra9lw0QbpLuxmZA85hytwpSBajtIo9l5ZBcYpWJRbhfSIhuyq341fH3';
+
+				FacebookSession::setDefaultApplication('1122289907787189','f46ab637962fb1491b956ccc2154a7d5');
+				$session = new FacebookSession($token);
+
+				$getPages = (new FacebookRequest(
+					$session,
+					'GET',
+					'/me/accounts'
+				))->execute()->getGraphObject()->asArray();
+				$pageId = $getPages['data'][0]->id;
+				$pageAccessToken = $getPages['data'][0]->access_token;
+				if (!empty($model->file))
+				{
+					$location = '';
+					if(substr_count($model->file->getType(), 'video') > 0)
+						$location = 'videos';
+					elseif(substr_count($model->file->getType(), 'image') > 0)
+						$location = 'photos';
+					(new FacebookRequest(
+						$session,
+						'POST',
+						'/'.$pageId.'/'.$location,
+						array(
+							'access_token'=>$pageAccessToken,
+							'message'=>$model->content,
+							'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
+						))
+					)->execute()->getGraphObject();	
+				}
+				else
+				{
+					(new FacebookRequest(
+						$session,
+						'POST',
+						'/'.$pageId.'/feed',
+						array(
+							'access_token'=>$pageAccessToken,
+							'message'=>$model->content,
+							'link'=>$model->link,
+						))
+					)->execute()->getGraphObject();	
+				}
+			}
 			if($model->save())
+			{
+				if (!empty($model->file))
+				{
+					$translit = array(
+		            'а'=>'a','б'=>'b','в'=>'v',
+		            'г'=>'g','д'=>'d','е'=>'e',
+		            'ё'=>'yo','ж'=>'zh','з'=>'z',
+		            'и'=>'i','й'=>'j','к'=>'k',
+		            'л'=>'l','м'=>'m','н'=>'n',
+		            'о'=>'o','п'=>'p','р'=>'r',
+		            'с'=>'s','т'=>'t','у'=>'u',
+		            'ф'=>'f','х'=>'x','ц'=>'c',
+		            'ч'=>'ch','ш'=>'sh','щ'=>'shh',
+		            'ь'=>'\'','ы'=>'y','ъ'=>'\'\'',
+		            'э'=>'e\'','ю'=>'yu','я'=>'ya',
+		            'А'=>'A','Б'=>'B','В'=>'V',
+		            'Г'=>'G','Д'=>'D','Е'=>'E',
+		            'Ё'=>'YO','Ж'=>'Zh','З'=>'Z',
+		            'И'=>'I','Й'=>'J','К'=>'K',
+		            'Л'=>'L','М'=>'M','Н'=>'N',
+		            'О'=>'O','П'=>'P','Р'=>'R',
+		            'С'=>'S','Т'=>'T','У'=>'U',
+		            'Ф'=>'F','Х'=>'X','Ц'=>'C',
+		            'Ч'=>'CH','Ш'=>'SH','Щ'=>'SHH',
+		            'Ь'=>'\'','Ы'=>'Y\'','Ъ'=>'\'\'',
+		            'Э'=>'E\'','Ю'=>'YU','Я'=>'YA',
+		        	);
+					$path = 'upload/'.strtr($model->file->getName(), $translit);
+					$model->file->saveAs($path);
+					$model->file = $path;
+				}
 				$this->redirect(array('view','id'=>$model->id));
+			}
 		}
 
 		$this->render('create',array(
@@ -84,9 +168,10 @@ class PostController extends Controller
 		{
 			$model->attributes=$_POST['Post'];
 			if($model->save())
+			{	
 				$this->redirect(array('view','id'=>$model->id));
+			}
 		}
-
 		$this->render('update',array(
 			'model'=>$model,
 		));
