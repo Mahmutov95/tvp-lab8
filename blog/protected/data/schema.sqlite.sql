@@ -26,6 +26,8 @@ CREATE TABLE tbl_post
 	create_time INTEGER,
 	update_time INTEGER,
 	author_id INTEGER NOT NULL,
+	file VARCHAR(255),
+	link VARCHAR(255),
 	CONSTRAINT FK_post_author FOREIGN KEY (author_id)
 		REFERENCES tbl_user (id) ON DELETE CASCADE ON UPDATE RESTRICT
 );
