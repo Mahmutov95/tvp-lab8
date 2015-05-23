@@ -70,52 +70,21 @@ class PostController extends Controller
 		{
 			$model->attributes=$_POST['Post'];
 			$model->file = CUploadedFile::getInstance($model, 'file');
-			if(isset($_POST['share']) && $_POST['share'] == 'facebook')
+
+			// ===== POST INTO FACEBOOK PAGE =====
+			if(isset($_POST['shareFacebookPage']) && $_POST['shareFacebookPage'] == 'share')
 			{
-				$token = 'CAAP8t3tJ5bUBADYZAg9ap97F7sI2ZAw0wvXjtf99wpODa7AL2J8NJffgZB9TDcfd5qWW9JHzYvgG0ZAatM5C2VBDricp9kank4iG47OGkpgZBcSdhaKAQrcvqdSaorkaIVaIvPuQktb9neaovjCUQHZA1WBiW6IrAra9lw0QbpLuxmZA85hytwpSBajtIo9l5ZBcYpWJRbhfSIhuyq341fH3';
-
-				FacebookSession::setDefaultApplication('1122289907787189','f46ab637962fb1491b956ccc2154a7d5');
-				$session = new FacebookSession($token);
-
-				$getPages = (new FacebookRequest(
-					$session,
-					'GET',
-					'/me/accounts'
-				))->execute()->getGraphObject()->asArray();
-				$pageId = $getPages['data'][0]->id;
-				$pageAccessToken = $getPages['data'][0]->access_token;
-				if (!empty($model->file))
-				{
-					$location = '';
-					if(substr_count($model->file->getType(), 'video') > 0)
-						$location = 'videos';
-					elseif(substr_count($model->file->getType(), 'image') > 0)
-						$location = 'photos';
-					(new FacebookRequest(
-						$session,
-						'POST',
-						'/'.$pageId.'/'.$location,
-						array(
-							'access_token'=>$pageAccessToken,
-							'message'=>$model->content,
-							'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
-						))
-					)->execute()->getGraphObject();	
-				}
-				else
-				{
-					(new FacebookRequest(
-						$session,
-						'POST',
-						'/'.$pageId.'/feed',
-						array(
-							'access_token'=>$pageAccessToken,
-							'message'=>$model->content,
-							'link'=>$model->link,
-						))
-					)->execute()->getGraphObject();	
-				}
+				$page = $_POST['page'];
+				$this->sendFacebook($model, $page, 'page');
 			}
+
+			// ===== POST INTO FACEBOOK GROUP =====
+			elseif(isset($_POST['shareFacebookGroup']) && $_POST['shareFacebookGroup'] == 'share')
+			{
+				$group = $_POST['group'];
+				$this->sendFacebook($model, $group, 'group');
+			}
+
 			if($model->save())
 			{
 				if (!empty($model->file))
@@ -148,13 +117,95 @@ class PostController extends Controller
 					$model->file->saveAs($path);
 					$model->file = $path;
 				}
+				
 				$this->redirect(array('view','id'=>$model->id));
 			}
 		}
 
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		$facebookPages = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/accounts'
+		))->execute()->getGraphObject()->asArray();
+
+		$facebookGroups = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/groups'
+		))->execute()->getGraphObject()->asArray();
+
 		$this->render('create',array(
 			'model'=>$model,
+			'facebookPages'=>$facebookPages,
+			'facebookGroups'=>$facebookGroups,
 		));
+	}
+
+	// ===== SELECT FACEBOOK PAGE OR GROUP FOR POSTING =====
+	private function sendFacebook($model, $where, $type = null)
+	{
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		if ($type == 'page')
+		{
+			$pages = (new FacebookRequest(
+				$session,
+				'GET',
+				'/me/accounts'
+			))->execute()->getGraphObject()->asArray();	
+
+			$page = array_filter($pages['data'], function($e) use (&$where)
+			{
+				return $e->id == $where;
+			});
+
+			$token = $page[0]->access_token;
+		}
+
+		if (!empty($model->file))
+		{
+			$location = '';
+			if(substr_count($model->file->getType(), 'video') > 0)
+				$location = 'videos';
+			elseif(substr_count($model->file->getType(), 'image') > 0)
+				$location = 'photos';
+
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/'.$location,
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
+				))
+			)->execute()->getGraphObject();	
+		}
+		else
+		{
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/feed',
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'link'=>$model->link,
+				))
+			)->execute()->getGraphObject();	
+		}
 	}
 
 	/**

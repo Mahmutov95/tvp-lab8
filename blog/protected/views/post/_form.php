@@ -54,11 +54,36 @@
 		<?php echo $form->error($model,'link'); ?>
 	</div>
 
-	<div class="row">
-		<label for="share">Share to Facebook</label>
-		<input type="checkbox" id="share" name="share" value="facebook">
-	</div>
+	<?php if (!empty($facebookPages)): ?>
+		<div class="row">
+			<label for="share">Share to Facebook Page</label>
+			<input type="radio" id="shareFacebookPage" name="shareFacebookPage" value="share">
+			<select name="page">
+				<?php foreach ($facebookPages['data'] as $key => $page): ?>
+					<option value="<?=$page->id?>">
+						<?=$page->name?>
+					</option>
+				<?php endforeach ?>
+			</select>
+		</div>
+	<?php endif; ?>
 
+	<?php if (!empty($facebookGroups)): ?>
+		<div class="row">
+			<label for="share-facebook-group">Share to Facebook Group</label>
+			<input type="radio" id="shareFacebookGroup" name="shareFacebookGroup" value="share">
+			<select name="group">
+				<?php foreach ($facebookGroups['data'] as $key => $group): ?>
+					<?php if ($group->administrator == 1): ?>
+						<option value="<?=$group->id?>">
+							<?=$group->name?>
+						</option>
+					<?php endif ?>
+				<?php endforeach ?>
+			</select>
+		</div>
+	<?php endif; ?>
+	
 	<div class="row buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save'); ?>
 	</div>

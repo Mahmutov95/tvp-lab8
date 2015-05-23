@@ -34,8 +34,8 @@
 				    <source src="/upload/<? echo $file ?>" type="audio/mpeg">
 				    Тег audio не поддерживается вашим браузером. 
 				</audio>
-			<?php elseif(preg_match('/jpg|png|jpeg|gif/', strtolower($format))): ?>
-				<img src="/upload/<? echo $file ?>" alt="">
+			<?php elseif(preg_match('/jpg|png|jpeg|gif|bmp|jpeg/', strtolower($format))): ?>
+				<img src="/upload/<? echo $file ?>" alt="" width="480" height="320">
 			<?php endif ?>
 		</div>
 	</div>
