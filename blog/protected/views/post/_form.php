@@ -54,41 +54,36 @@
 		<?php echo $form->error($model,'link'); ?>
 	</div>
 
-	<div class="row">
-		<label for="share">Share to Facebook</label>
-		<input type="checkbox" id="share" name="share" value="facebook">
-	</div>
+	<?php if (!empty($facebookPages)): ?>
+		<div class="row">
+			<label for="share">Share to Facebook Page</label>
+			<input type="radio" id="shareFacebookPage" name="shareFacebookPage" value="share">
+			<select name="page">
+				<?php foreach ($facebookPages['data'] as $key => $page): ?>
+					<option value="<?=$page->id?>">
+						<?=$page->name?>
+					</option>
+				<?php endforeach ?>
+			</select>
+		</div>
+	<?php endif; ?>
+
+	<?php if (!empty($facebookGroups)): ?>
+		<div class="row">
+			<label for="share-facebook-group">Share to Facebook Group</label>
+			<input type="radio" id="shareFacebookGroup" name="shareFacebookGroup" value="share">
+			<select name="group">
+				<?php foreach ($facebookGroups['data'] as $key => $group): ?>
+					<?php if ($group->administrator == 1): ?>
+						<option value="<?=$group->id?>">
+							<?=$group->name?>
+						</option>
+					<?php endif ?>
+				<?php endforeach ?>
+			</select>
+		</div>
+	<?php endif; ?>
 	
-	<div class="row">
-		<label for="share">Chose your group</label>
-		<?php
-			require_once('Facebook/SDK/autoload.php');
-			use Facebook\FacebookSession;	
-			use Facebook\FacebookRequest;
-			$token = 'CAAT8KhHwuYEBAA0wnNyVWrk4Rt5ufPftnSZBndG7awbQ1kfPbL8vrVAV82hA3ybXn75Ls4PIZBZCYu8nhszQCjGFgfZBWuQ6l1rgD5pvCDIe1le1ZBk72HEa3k6dsGcuoQSfiKNkERumigsCou6dG4Cyvkj64E0kKlZCGT06ijQxnKw2MHUnSWLORiyx22kCzEnGjp3ZCK0jc0NvIcpwL9ZAgnA4zdTLsd4ZD';
-
-			FacebookSession::setDefaultApplication('1403157526657409','6e79d4d81541378d2dfbb7b90225b2d5');
-			$session = new FacebookSession($token);
-
-			$getGroups = (new FacebookRequest(
-				$session,
-				'GET',
-				'/me/groups'
-			))->execute()->getGraphObject()->asArray();
-	
-			$index = 0;
-			echo "<select id='group' name='group'>";
-			while($index<count($getGroups['data'])){
-				if($getGroups['data'][$index]->administrator=='1') {
-				
-					echo "<option value=".$getGroups['data'][$index]->id.">".$getGroups['data'][$index]->name."</option>";
-				}
-				$index++;
-			}
-			echo "</select>";
-		?>
-	</div>
-
 	<div class="row buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save'); ?>
 	</div>

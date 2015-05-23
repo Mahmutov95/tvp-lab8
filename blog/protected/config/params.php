@@ -16,4 +16,10 @@ return array(
 	'commentNeedApproval'=>true,
 	// the copyright information displayed in the footer section
 	'copyrightInfo'=>'Copyright &copy; 2009 by My Company.',
+
+	'facebookApi'=>array(
+		'id'=>'1403157526657409',
+		'secret'=>'6e79d4d81541378d2dfbb7b90225b2d5',
+		'token'=>'CAAT8KhHwuYEBAGZBFCiN8bnt7PKsWBSviSSDLdZBL0BVamq2ZBLY1kuIky5fKSM9MJGdNXTxnF1dhxGUZB66dfUbcv2Tp21tFBwvlD1gh0vnpIneWDqbSgq7abL8rpZBAyMnqO47s0JqVpQ8Wz4OIgVkGbS9f6fQIj9WurUMbNTjo1YBZCtXPbS0cXZBETYDAN9HwTDt2MaJK7HhUUG7usZBQOks4mZAh7hUZD'
+	)
 );

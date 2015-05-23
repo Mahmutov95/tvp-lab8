@@ -70,40 +70,21 @@ class PostController extends Controller
 		{
 			$model->attributes=$_POST['Post'];
 			$model->file = CUploadedFile::getInstance($model, 'file');
-			if(isset($_POST['share']) && $_POST['share'] == 'facebook')
+
+			// ===== POST INTO FACEBOOK PAGE =====
+			if(isset($_POST['shareFacebookPage']) && $_POST['shareFacebookPage'] == 'share')
 			{
-				$token = 'CAAT8KhHwuYEBAA0wnNyVWrk4Rt5ufPftnSZBndG7awbQ1kfPbL8vrVAV82hA3ybXn75Ls4PIZBZCYu8nhszQCjGFgfZBWuQ6l1rgD5pvCDIe1le1ZBk72HEa3k6dsGcuoQSfiKNkERumigsCou6dG4Cyvkj64E0kKlZCGT06ijQxnKw2MHUnSWLORiyx22kCzEnGjp3ZCK0jc0NvIcpwL9ZAgnA4zdTLsd4ZD';
-
-				FacebookSession::setDefaultApplication('1403157526657409','6e79d4d81541378d2dfbb7b90225b2d5');
-				$session = new FacebookSession($token);
-
-				if (!empty($model->file))
-				{
-					(new FacebookRequest(
-						$session,
-						'POST',
-						'/'.$_POST['group'].'/photos',
-						array(
-							'access_token'=>$token,
-							'message'=>$model->content,
-							'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
-						))
-					)->execute()->getGraphObject();	
-				}
-				else
-				{
-					(new FacebookRequest(
-						$session,
-						'POST',
-						'/'.$_POST['group'].'/feed',
-						array(
-							'access_token'=>$token,
-							'message'=>$model->content,
-							'link'=>$model->link,
-						))
-					)->execute()->getGraphObject();	
-				}
+				$page = $_POST['page'];
+				$this->sendFacebook($model, $page, 'page');
 			}
+
+			// ===== POST INTO FACEBOOK GROUP =====
+			elseif(isset($_POST['shareFacebookGroup']) && $_POST['shareFacebookGroup'] == 'share')
+			{
+				$group = $_POST['group'];
+				$this->sendFacebook($model, $group, 'group');
+			}
+
 			if($model->save())
 			{
 				if (!empty($model->file))
@@ -136,13 +117,95 @@ class PostController extends Controller
 					$model->file->saveAs($path);
 					$model->file = $path;
 				}
+
 				$this->redirect(array('view','id'=>$model->id));
 			}
 		}
 
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		$facebookPages = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/accounts'
+		))->execute()->getGraphObject()->asArray();
+
+		$facebookGroups = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/groups'
+		))->execute()->getGraphObject()->asArray();
+
 		$this->render('create',array(
 			'model'=>$model,
+			'facebookPages'=>$facebookPages,
+			'facebookGroups'=>$facebookGroups,
 		));
+	}
+
+	// ===== SELECT FACEBOOK PAGE OR GROUP FOR POSTING =====
+	private function sendFacebook($model, $where, $type = null)
+	{
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		if ($type == 'page')
+		{
+			$pages = (new FacebookRequest(
+				$session,
+				'GET',
+				'/me/accounts'
+			))->execute()->getGraphObject()->asArray();	
+
+			$page = array_filter($pages['data'], function($e) use (&$where)
+			{
+				return $e->id == $where;
+			});
+
+			$token = $page[0]->access_token;
+		}
+
+		if (!empty($model->file))
+		{
+			$location = '';
+			if(substr_count($model->file->getType(), 'video') > 0)
+				$location = 'videos';
+			elseif(substr_count($model->file->getType(), 'image') > 0)
+				$location = 'photos';
+
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/'.$location,
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
+				))
+			)->execute()->getGraphObject();	
+		}
+		else
+		{
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/feed',
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'link'=>$model->link,
+				))
+			)->execute()->getGraphObject();	
+		}
 	}
 
 	/**
