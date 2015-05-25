@@ -54,6 +54,11 @@
 		<?php echo $form->error($model,'link'); ?>
 	</div>
 
+	<div class="row">
+		<label for="share">Share to VK Wall Video</label>
+		<input type="radio" id="shareVkWallVideo" name="shareVkWallVideo" value="share">
+	</div>
+	
 	<?php if (!empty($facebookPages)): ?>
 		<div class="row">
 			<label for="share">Share to Facebook Page</label>
