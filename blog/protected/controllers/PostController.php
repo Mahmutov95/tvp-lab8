@@ -65,6 +65,12 @@ class PostController extends Controller
 	 */
 	public function actionCreate()
 	{
+		require_once('vk/App.php');
+		require_once('vk/Video.php');
+		require_once('vk/Wall.php');
+		
+		define('UID', 111868333);
+		
 		$model=new Post;
 		if(isset($_POST['Post']))
 		{
@@ -87,6 +93,15 @@ class PostController extends Controller
 
 			if($model->save())
 			{
+				// ===== POST INTO VK WALL VIDEO ===== //
+				if(isset($_POST['shareVkWallVideo']) && $_POST['shareVkWallVideo'] == 'share')
+				{
+					$video = Video::save($model->file);
+					$message = $model->content;
+					$attacments = 'video'.UID.'_'.$video['video_id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
+					$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
+				}
+
 				if (!empty($model->file))
 				{
 					$translit = array(
@@ -125,7 +140,6 @@ class PostController extends Controller
 		$token = Yii::app()->params['facebookApi']['token'];
 		$id = Yii::app()->params['facebookApi']['id'];
 		$secret = Yii::app()->params['facebookApi']['secret'];
-
 		FacebookSession::setDefaultApplication($id, $secret);
 		$session = new FacebookSession($token);
 
