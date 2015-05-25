@@ -1,16 +1,8 @@
 <?php
-
-function mpr($data)
-{
-	echo "<pre>";
-	print_r($data);
-	echo "</pre>";
-}
-
 class App
 {
 	const API_VERSION = '5.28';
-	const TOKEN = '66af71bc563d585bfd9920583c359aca1de12604670cbd9c4a5be4610886896852b97a8c43d490f55d5ef';
+	const TOKEN = 'bfa1680c4a2eeb2b32cb91a06840fe45c7db69c415d16412350d30abef0c2d918828615bd1e29fd53530f';
 	const METHOD_URL = 'https://api.vk.com/method/';
 	
 	public function api($method = '', $vars = array())

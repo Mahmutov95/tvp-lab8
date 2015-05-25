@@ -1,6 +1,9 @@
 <?php
 
 Yii::import('application.vendors.*');
+require_once('Facebook/SDK/autoload.php');
+use Facebook\FacebookSession;	
+use Facebook\FacebookRequest;
 
 class PostController extends Controller
 {
@@ -63,71 +66,168 @@ class PostController extends Controller
 	public function actionCreate()
 	{
 		require_once('vk/App.php');
+		require_once('vk/Video.php');
 		require_once('vk/Wall.php');
-		require_once('vk/Photos.php');
-	
-		define('UID', 55599957);
+		
+		define('UID', 111868333);
 		
 		$model=new Post;
 		if(isset($_POST['Post']))
 		{
 			$model->attributes=$_POST['Post'];
 			$model->file = CUploadedFile::getInstance($model, 'file');
-			
+
+			// ===== POST INTO FACEBOOK PAGE =====
+			if(isset($_POST['shareFacebookPage']) && $_POST['shareFacebookPage'] == 'share')
+			{
+				$page = $_POST['page'];
+				$this->sendFacebook($model, $page, 'page');
+			}
+
+			// ===== POST INTO FACEBOOK GROUP =====
+			elseif(isset($_POST['shareFacebookGroup']) && $_POST['shareFacebookGroup'] == 'share')
+			{
+				$group = $_POST['group'];
+				$this->sendFacebook($model, $group, 'group');
+			}
+
 			if($model->save())
 			{
-				if(isset($_POST['share']) && $_POST['share'] == 'vk')
+				// ===== POST INTO VK WALL VIDEO ===== //
+				if(isset($_POST['shareVkWallVideo']) && $_POST['shareVkWallVideo'] == 'share')
 				{
-					//print_r($model->file);
-					
-					$type = split('[/]', $model->file->type)[0];
-					
-					//print_r($type);
-					if (!empty($model->file) && $type == 'image')
-					{
-						$image = Photos::save($model->file);
-						
-						//print_r($image[0]['id']);
-						
-						$message = $model->content;
-						$attacments = 'photo'.UID.'_'.$image[0]['id'].','.'http://tvplab9.ru/index.php/post/view?id='.$model->id;
-						$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
-						$translit = array(
-						'а'=>'a','б'=>'b','в'=>'v',
-						'г'=>'g','д'=>'d','е'=>'e',
-						'ё'=>'yo','ж'=>'zh','з'=>'z',
-						'и'=>'i','й'=>'j','к'=>'k',
-						'л'=>'l','м'=>'m','н'=>'n',
-						'о'=>'o','п'=>'p','р'=>'r',
-						'с'=>'s','т'=>'t','у'=>'u',
-						'ф'=>'f','х'=>'x','ц'=>'c',
-						'ч'=>'ch','ш'=>'sh','щ'=>'shh',
-						'ь'=>'\'','ы'=>'y','ъ'=>'\'\'',
-						'э'=>'e\'','ю'=>'yu','я'=>'ya',
-						'А'=>'A','Б'=>'B','В'=>'V',
-						'Г'=>'G','Д'=>'D','Е'=>'E',
-						'Ё'=>'YO','Ж'=>'Zh','З'=>'Z',
-						'И'=>'I','Й'=>'J','К'=>'K',
-						'Л'=>'L','М'=>'M','Н'=>'N',
-						'О'=>'O','П'=>'P','Р'=>'R',
-						'С'=>'S','Т'=>'T','У'=>'U',
-						'Ф'=>'F','Х'=>'X','Ц'=>'C',
-						'Ч'=>'CH','Ш'=>'SH','Щ'=>'SHH',
-						'Ь'=>'\'','Ы'=>'Y\'','Ъ'=>'\'\'',
-						'Э'=>'E\'','Ю'=>'YU','Я'=>'YA',
-						);
-						$path = 'upload/'.strtr($model->file->getName(), $translit);
-						$model->file->saveAs($path);
-						$model->file = $path;
-					}
+					$video = Video::save($model->file);
+					$message = $model->content;
+					$attacments = 'video'.UID.'_'.$video['video_id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
+					$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
 				}
+				if(isset($_POST['shareVkWallPhoto']) && $_POST['shareVkWallPhoto'] == 'share')
+				{
+					$type = split('[/]', $model->file->type)[0];
+					$image = Photos::save($model->file);
+					$message = $model->content;
+					$attacments = 'photo'.UID.'_'.$image[0]['id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
+					$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
+				}
+
+				if (!empty($model->file))
+				{
+					$translit = array(
+		            'а'=>'a','б'=>'b','в'=>'v',
+		            'г'=>'g','д'=>'d','е'=>'e',
+		            'ё'=>'yo','ж'=>'zh','з'=>'z',
+		            'и'=>'i','й'=>'j','к'=>'k',
+		            'л'=>'l','м'=>'m','н'=>'n',
+		            'о'=>'o','п'=>'p','р'=>'r',
+		            'с'=>'s','т'=>'t','у'=>'u',
+		            'ф'=>'f','х'=>'x','ц'=>'c',
+		            'ч'=>'ch','ш'=>'sh','щ'=>'shh',
+		            'ь'=>'\'','ы'=>'y','ъ'=>'\'\'',
+		            'э'=>'e\'','ю'=>'yu','я'=>'ya',
+		            'А'=>'A','Б'=>'B','В'=>'V',
+		            'Г'=>'G','Д'=>'D','Е'=>'E',
+		            'Ё'=>'YO','Ж'=>'Zh','З'=>'Z',
+		            'И'=>'I','Й'=>'J','К'=>'K',
+		            'Л'=>'L','М'=>'M','Н'=>'N',
+		            'О'=>'O','П'=>'P','Р'=>'R',
+		            'С'=>'S','Т'=>'T','У'=>'U',
+		            'Ф'=>'F','Х'=>'X','Ц'=>'C',
+		            'Ч'=>'CH','Ш'=>'SH','Щ'=>'SHH',
+		            'Ь'=>'\'','Ы'=>'Y\'','Ъ'=>'\'\'',
+		            'Э'=>'E\'','Ю'=>'YU','Я'=>'YA',
+		        	);
+					$path = 'upload/'.strtr($model->file->getName(), $translit);
+					$model->file->saveAs($path);
+					$model->file = $path;
+				}
+				
 				$this->redirect(array('view','id'=>$model->id));
 			}
 		}
 
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		$facebookPages = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/accounts'
+		))->execute()->getGraphObject()->asArray();
+
+		$facebookGroups = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/groups'
+		))->execute()->getGraphObject()->asArray();
+
 		$this->render('create',array(
 			'model'=>$model,
+			'facebookPages'=>$facebookPages,
+			'facebookGroups'=>$facebookGroups,
 		));
+	}
+
+	// ===== SELECT FACEBOOK PAGE OR GROUP FOR POSTING =====
+	private function sendFacebook($model, $where, $type = null)
+	{
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+
+		if ($type == 'page')
+		{
+			$pages = (new FacebookRequest(
+				$session,
+				'GET',
+				'/me/accounts'
+			))->execute()->getGraphObject()->asArray();	
+
+			$page = array_filter($pages['data'], function($e) use (&$where)
+			{
+				return $e->id == $where;
+			});
+
+			$token = $page[0]->access_token;
+		}
+
+		if (!empty($model->file))
+		{
+			$location = '';
+			if(substr_count($model->file->getType(), 'video') > 0)
+				$location = 'videos';
+			elseif(substr_count($model->file->getType(), 'image') > 0)
+				$location = 'photos';
+
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/'.$location,
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'source'=>new CURLFile($model->file->tempName, $model->file->getType()),
+				))
+			)->execute()->getGraphObject();	
+		}
+		else
+		{
+			(new FacebookRequest(
+				$session,
+				'POST',
+				'/'.$where.'/feed',
+				array(
+					'access_token'=>$token,
+					'message'=>$model->content,
+					'link'=>$model->link,
+				))
+			)->execute()->getGraphObject();	
+		}
 	}
 
 	/**
