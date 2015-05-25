@@ -60,14 +60,13 @@
 		<input type="radio" id="shareVkWallVideo" name="shareVkWallVideo" value="share">
 	</div>
 	
-<<<<<<< HEAD
+
 	<div class="row">
 		<label for="share">Share to VK Wall Photo</label>
 		<input type="radio" id="shareVkWallPhoto" name="shareVkWallPhoto" value="share">
 		</label>
 	</div>
-=======
->>>>>>> origin/base
+
 	<?php if (!empty($facebookPages)): ?>
 		<div class="row">
 			<label for="share">Share to Facebook Page</label>
