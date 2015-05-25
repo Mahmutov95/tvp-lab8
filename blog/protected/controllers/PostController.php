@@ -73,52 +73,86 @@ class PostController extends Controller
 		{
 			$model->attributes=$_POST['Post'];
 			$model->file = CUploadedFile::getInstance($model, 'file');
-			
+			// ===== POST INTO FACEBOOK PAGE =====
+			if(isset($_POST['shareFacebookPage']) && $_POST['shareFacebookPage'] == 'share')
+			{
+				$page = $_POST['page'];
+				$this->sendFacebook($model, $page, 'page');
+			}
+			// ===== POST INTO FACEBOOK GROUP =====
+			elseif(isset($_POST['shareFacebookGroup']) && $_POST['shareFacebookGroup'] == 'share')
+			{
+				$group = $_POST['group'];
+				$this->sendFacebook($model, $group, 'group');
+			}
 			if($model->save())
 			{
-				if(isset($_POST['share']) && $_POST['share'] == 'vk')
+				// ===== POST INTO VK WALL VIDEO ===== //
+				if(isset($_POST['shareVkWallVideo']) && $_POST['shareVkWallVideo'] == 'share')
 				{
-					if (!empty($model->file) && $model->file->type == 'video/mp4')
-					{
-						$video = Video::save($model->file);
-						$message = $model->content;
-						$attacments = 'video'.UID.'_'.$video['video_id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
-						$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
-						$translit = array(
-						'а'=>'a','б'=>'b','в'=>'v',
-						'г'=>'g','д'=>'d','е'=>'e',
-						'ё'=>'yo','ж'=>'zh','з'=>'z',
-						'и'=>'i','й'=>'j','к'=>'k',
-						'л'=>'l','м'=>'m','н'=>'n',
-						'о'=>'o','п'=>'p','р'=>'r',
-						'с'=>'s','т'=>'t','у'=>'u',
-						'ф'=>'f','х'=>'x','ц'=>'c',
-						'ч'=>'ch','ш'=>'sh','щ'=>'shh',
-						'ь'=>'\'','ы'=>'y','ъ'=>'\'\'',
-						'э'=>'e\'','ю'=>'yu','я'=>'ya',
-						'А'=>'A','Б'=>'B','В'=>'V',
-						'Г'=>'G','Д'=>'D','Е'=>'E',
-						'Ё'=>'YO','Ж'=>'Zh','З'=>'Z',
-						'И'=>'I','Й'=>'J','К'=>'K',
-						'Л'=>'L','М'=>'M','Н'=>'N',
-						'О'=>'O','П'=>'P','Р'=>'R',
-						'С'=>'S','Т'=>'T','У'=>'U',
-						'Ф'=>'F','Х'=>'X','Ц'=>'C',
-						'Ч'=>'CH','Ш'=>'SH','Щ'=>'SHH',
-						'Ь'=>'\'','Ы'=>'Y\'','Ъ'=>'\'\'',
-						'Э'=>'E\'','Ю'=>'YU','Я'=>'YA',
-						);
-						$path = 'upload/'.strtr($model->file->getName(), $translit);
-						$model->file->saveAs($path);
-						$model->file = $path;
-					}
+					$video = Video::save($model->file);
+					$message = $model->content;
+					$attacments = 'video'.UID.'_'.$video['video_id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
+					$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
 				}
+				
+				if (!empty($model->file))
+				{
+					$translit = array(
+		            'а'=>'a','б'=>'b','в'=>'v',
+		            'г'=>'g','д'=>'d','е'=>'e',
+		            'ё'=>'yo','ж'=>'zh','з'=>'z',
+		            'и'=>'i','й'=>'j','к'=>'k',
+		            'л'=>'l','м'=>'m','н'=>'n',
+		            'о'=>'o','п'=>'p','р'=>'r',
+		            'с'=>'s','т'=>'t','у'=>'u',
+		            'ф'=>'f','х'=>'x','ц'=>'c',
+		            'ч'=>'ch','ш'=>'sh','щ'=>'shh',
+		            'ь'=>'\'','ы'=>'y','ъ'=>'\'\'',
+		            'э'=>'e\'','ю'=>'yu','я'=>'ya',
+		            'А'=>'A','Б'=>'B','В'=>'V',
+		            'Г'=>'G','Д'=>'D','Е'=>'E',
+		            'Ё'=>'YO','Ж'=>'Zh','З'=>'Z',
+		            'И'=>'I','Й'=>'J','К'=>'K',
+		            'Л'=>'L','М'=>'M','Н'=>'N',
+		            'О'=>'O','П'=>'P','Р'=>'R',
+		            'С'=>'S','Т'=>'T','У'=>'U',
+		            'Ф'=>'F','Х'=>'X','Ц'=>'C',
+		            'Ч'=>'CH','Ш'=>'SH','Щ'=>'SHH',
+		            'Ь'=>'\'','Ы'=>'Y\'','Ъ'=>'\'\'',
+		            'Э'=>'E\'','Ю'=>'YU','Я'=>'YA',
+		        	);
+					$path = 'upload/'.strtr($model->file->getName(), $translit);
+					$model->file->saveAs($path);
+					$model->file = $path;
+				}
+				
 				$this->redirect(array('view','id'=>$model->id));
 			}
 		}
-
+		
+		$token = Yii::app()->params['facebookApi']['token'];
+		$id = Yii::app()->params['facebookApi']['id'];
+		$secret = Yii::app()->params['facebookApi']['secret'];
+		FacebookSession::setDefaultApplication($id, $secret);
+		$session = new FacebookSession($token);
+		
+		$facebookPages = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/accounts'
+		))->execute()->getGraphObject()->asArray();
+		
+		$facebookGroups = (new FacebookRequest(
+			$session,
+			'GET',
+			'/me/groups'
+		))->execute()->getGraphObject()->asArray();
+		
 		$this->render('create',array(
 			'model'=>$model,
+			'facebookPages'=>$facebookPages,
+			'facebookGroups'=>$facebookGroups,
 		));
 	}
 
