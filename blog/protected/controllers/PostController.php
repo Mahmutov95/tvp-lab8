@@ -1,9 +1,12 @@
 <?php
 
 Yii::import('application.vendors.*');
+<<<<<<< HEAD
 require_once('Facebook/SDK/autoload.php');
 use Facebook\FacebookSession;	
 use Facebook\FacebookRequest;
+=======
+>>>>>>> origin/Grebtcov
 
 class PostController extends Controller
 {
@@ -65,11 +68,18 @@ class PostController extends Controller
 	 */
 	public function actionCreate()
 	{
+		require_once('vk/App.php');
+		require_once('vk/Wall.php');
+		require_once('vk/Photos.php');
+	
+		define('UID', 55599957);
+		
 		$model=new Post;
 		if(isset($_POST['Post']))
 		{
 			$model->attributes=$_POST['Post'];
 			$model->file = CUploadedFile::getInstance($model, 'file');
+
 
 			// ===== POST INTO FACEBOOK PAGE =====
 			if(isset($_POST['shareFacebookPage']) && $_POST['shareFacebookPage'] == 'share')
@@ -85,8 +95,29 @@ class PostController extends Controller
 				$this->sendFacebook($model, $group, 'group');
 			}
 
+			
+
 			if($model->save())
 			{
+				if(isset($_POST['share']) && $_POST['share'] == 'vk')
+			{
+				
+					$type = split('[/]', $model->file->type)[0];
+					
+					//print_r($type);
+					if (!empty($model->file) && $type == 'image')
+					{
+						$image = Photos::save($model->file);
+						
+						//print_r($image[0]['id']);
+						
+						$message = $model->content;
+						$attacments = 'photo'.UID.'_'.$image[0]['id'].','.'http://tvplab9.ru/index.php/post/view?id='.$model->id;
+						$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
+						}
+			}
+				
+			
 				if (!empty($model->file))
 				{
 					$translit = array(
@@ -118,6 +149,7 @@ class PostController extends Controller
 					$model->file = $path;
 				}
 				
+
 				$this->redirect(array('view','id'=>$model->id));
 			}
 		}
