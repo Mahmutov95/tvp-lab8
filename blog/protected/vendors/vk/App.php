@@ -1,12 +1,4 @@
 <?php
-
-function mpr($data)
-{
-	echo "<pre>";
-	print_r($data);
-	echo "</pre>";
-}
-
 class App
 {
 	const API_VERSION = '5.28';
