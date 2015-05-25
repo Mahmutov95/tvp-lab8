@@ -52,8 +52,19 @@
 		<?php echo $form->labelEx($model, 'link') ?>
 		<?php echo $form->textField($model, 'link'); ?>
 		<?php echo $form->error($model,'link'); ?>
+
 	</div>
 
+	<div class="row">
+		<label for="share">Share to VK Wall Video</label>
+		<input type="radio" id="shareVkWallVideo" name="shareVkWallVideo" value="share">
+	</div>
+	
+	<div class="row">
+		<label for="share">Share to VK Wall Photo</label>
+		<input type="radio" id="shareVkWallPhoto" name="shareVkWallPhoto" value="share">
+		</label>
+	</div>
 	<?php if (!empty($facebookPages)): ?>
 		<div class="row">
 			<label for="share">Share to Facebook Page</label>
@@ -67,6 +78,7 @@
 			</select>
 		</div>
 	<?php endif; ?>
+
 
 	<?php if (!empty($facebookGroups)): ?>
 		<div class="row">
