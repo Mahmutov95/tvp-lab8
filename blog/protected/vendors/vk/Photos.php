@@ -38,7 +38,7 @@
 		{
 			//print_r($file);
 			
-			$data_json = App::api('photos.getWallUploadServer', array('group_id' => 55599957));
+			$data_json = App::api('photos.getWallUploadServer', array('group_id' => 111868333));
 			
 			if (!isset($data_json['upload_url'])) return false;
 			$upload_url = $data_json['upload_url'];
@@ -61,7 +61,7 @@
 			
 			//echo '<hr>';
 			
-			$result = App::api('photos.saveWallPhoto', array ( 'group_id' => 55599957, 'photo' => $upload_data['photo'], 'server' => $upload_data['server'], 'hash' => $upload_data['hash']));
+			$result = App::api('photos.saveWallPhoto', array ( 'group_id' => 111868333, 'photo' => $upload_data['photo'], 'server' => $upload_data['server'], 'hash' => $upload_data['hash']));
 			//print_r($result);
 			return $result;
 		}

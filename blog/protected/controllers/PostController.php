@@ -68,6 +68,7 @@ class PostController extends Controller
 		require_once('vk/App.php');
 		require_once('vk/Video.php');
 		require_once('vk/Wall.php');
+		require_once('vk/Photos.php');
 		
 		define('UID', 111868333);
 		
@@ -101,9 +102,9 @@ class PostController extends Controller
 					$attacments = 'video'.UID.'_'.$video['video_id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;
 					$post = Wall::post(UID, substr($message, 0, 50).'...', $attacments);
 				}
+				
 				if(isset($_POST['shareVkWallPhoto']) && $_POST['shareVkWallPhoto'] == 'share')
 				{
-					$type = split('[/]', $model->file->type)[0];
 					$image = Photos::save($model->file);
 					$message = $model->content;
 					$attacments = 'photo'.UID.'_'.$image[0]['id'].','.'http://twp-lab3.local/index.php/post/view?id='.$model->id;

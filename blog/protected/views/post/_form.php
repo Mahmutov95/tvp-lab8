@@ -64,7 +64,6 @@
 	<div class="row">
 		<label for="share">Share to VK Wall Photo</label>
 		<input type="radio" id="shareVkWallPhoto" name="shareVkWallPhoto" value="share">
-		</label>
 	</div>
 
 	<?php if (!empty($facebookPages)): ?>
